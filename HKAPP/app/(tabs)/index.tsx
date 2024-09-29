@@ -1,70 +1,99 @@
-import { Image, StyleSheet, Platform } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import Value from '../../components/Value';
+import RingProgress from '../../components/RingProgress';
+import { useState } from 'react';
+import useActivityMetrics from '../../hooks/useActivityMetrics';
+import useSleepMetrics from '../../hooks/useSleepMetrics';
+import { AntDesign } from '@expo/vector-icons';
 
-export default function HomeScreen() {
+const STEPS_GOAL = 10_000;
+
+const HomeScreen: React.FC = () => {
+
+  const [date, setDate] = useState(new Date());
+  const { steps, flights, distance } = useActivityMetrics(date);
+  const { sleepHours, sleepMinutes, inBedHours, inBedMinutes, inBedDate } = useSleepMetrics(date);
+
+  const changeDate = (numDays: any) => {
+    const currentDate = new Date(date); //  copy  current date
+    currentDate.setDate(currentDate.getDate() + numDays); // update the date ( + or - numDays) 
+    setDate(currentDate);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
+
+        <View style={styles.datePicker}>
+          <AntDesign
+            onPress={() => changeDate(-1)} // move backward
+            name="left"
+            size={20}
+            color="#597be3"
+          />
+
+          <Text style={styles.date}>{date.toDateString()}</Text>
+
+          <AntDesign
+            onPress={() => changeDate(1)} // forward
+            name="right"
+            size={20}
+            color="#597be3"
+          />
+        </View>
+
+        <RingProgress
+          radius={100}
+          strokeWidth={33}
+          progress={steps / STEPS_GOAL}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+        <View style={styles.values}>
+          <Value label="Steps" value={steps.toString()} />
+          <Value label="Distance" value={`${(distance / 1000).toFixed(2)} km`} />
+          <Value label="Flights Climbed" value={flights.toString()} />
+          <Value label="Sleep " value={`${sleepHours.toString()} hrs ${sleepMinutes.toString()} min`} />
+          <Value label="inBed Hours" value={`${inBedHours.toString()} hrs ${inBedMinutes.toString()} min`} />
+          <Value label="inBed Date" value={`${inBedDate.toString()} `} />
+
+        </View>
+
+        <StatusBar style="auto" />
+      </ScrollView>
+    </View>
+    // </Animated.View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flexGrow: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  values: {
     flexDirection: 'row',
+    gap: 25,
+    flexWrap: 'wrap',
+    marginTop: 100,
+  },
+  datePicker: {
     alignItems: 'center',
-    gap: 8,
+    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  date: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 20,
+    marginHorizontal: 40,
   },
 });
+
+export default HomeScreen;
+

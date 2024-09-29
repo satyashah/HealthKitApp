@@ -1,9 +1,5 @@
 # HealthKitApp
 
-https://reactnative.dev/docs/environment-setup
+# TEST Jiw0nie
 
-https://reactnative.dev/docs/running-on-device
-
-> npx expo start
-
-> a
+# testt
